@@ -180,7 +180,7 @@ fun TipsScreen() {
                                     modifier = Modifier
                                         .size(32.dp)
                                         .background(
-                                            color = MaterialTheme.colorScheme.primary,
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                                             shape = CircleShape
                                         )
                                 ) {
