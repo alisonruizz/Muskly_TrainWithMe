@@ -51,14 +51,13 @@ class GoalsActivity : ComponentActivity() {
             Muskly_TrainWithMeTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = Color(0xFF333E6B)
-                    //color = MaterialTheme.colorScheme.background
+                    color = MaterialTheme.colorScheme.background
                 ) {
                     GoalsScreen(
                         onRewardEarned = { reward ->
                             Toast.makeText(
                                 this,
-                                "¡Felicidades, has ganado $reward monedas!",
+                                "¡Congratulations, you earned $reward chigui-coins!",
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
@@ -96,7 +95,7 @@ fun GoalsScreen(onRewardEarned: (Int) -> Unit) {
     var selectedTab by remember { mutableStateOf(3) } // Goals seleccionado por defecto
 
     Scaffold(
-        containerColor = Color(0xFF333E6B),
+        containerColor = MaterialTheme.colorScheme.secondaryContainer,
         bottomBar = {
             BottomNavigationBar(
                 selectedTab = selectedTab,
@@ -127,14 +126,14 @@ fun GoalsScreen(onRewardEarned: (Int) -> Unit) {
                 Box(
                     modifier = Modifier
                         .padding(start = 8.dp, top = 8.dp)
-                        .background(Color.White, shape = speechBubbleShape())
+                        .background(MaterialTheme.colorScheme.surface, shape = speechBubbleShape())
                         .padding(12.dp)
                 ) {
                     Text(
                         text = stringResource(R.string.musk_message), // de strings.xml
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -146,7 +145,7 @@ fun GoalsScreen(onRewardEarned: (Int) -> Unit) {
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(vertical = 8.dp),
-                color = Color.White
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Column(
@@ -177,7 +176,8 @@ fun GoalItem(goal: Goal, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = if (goal.completed) Color(0xFF4CAF50) else Color(0xFFE0D6BB),
+                color = if (goal.completed) MaterialTheme.colorScheme.primaryContainer
+                else MaterialTheme.colorScheme.secondary,
                 shape = RoundedCornerShape(12.dp)
             )
             .clickable { onClick() }
@@ -187,7 +187,9 @@ fun GoalItem(goal: Goal, onClick: () -> Unit) {
         Text(
             text = goal.description,
             fontSize = 18.sp,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            color = if (goal.completed) MaterialTheme.colorScheme.onPrimaryContainer
+            else MaterialTheme.colorScheme.secondaryContainer
         )
 
         if (!goal.completed) {
@@ -198,7 +200,8 @@ fun GoalItem(goal: Goal, onClick: () -> Unit) {
                 Text(
                     text = "${goal.reward}",
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.secondaryContainer
                 )
                 Image(
                     painter = painterResource(id = R.drawable.chiguicoin_png), // tu drawable de moneda
@@ -209,7 +212,6 @@ fun GoalItem(goal: Goal, onClick: () -> Unit) {
         }
     }
 }
-
 
 // Shape personalizada para la burbuja de diálogo
 fun speechBubbleShape(): GenericShape {

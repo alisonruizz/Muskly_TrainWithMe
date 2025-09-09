@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -27,7 +28,7 @@ fun BottomNavigationBar(selectedTab: Int, onTabSelected: (Int) -> Unit) {
         Icons.Default.ShoppingCart
     )
 
-    NavigationBar(containerColor = Color(0xFF636989)) { // gris #636989
+    NavigationBar(containerColor = MaterialTheme.colorScheme.surface) { // gris #636989
         items.forEachIndexed { index, label ->
             NavigationBarItem(
                 icon = {
@@ -40,10 +41,10 @@ fun BottomNavigationBar(selectedTab: Int, onTabSelected: (Int) -> Unit) {
                 selected = selectedTab == index,
                 onClick = { onTabSelected(index) },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color.White,
-                    unselectedIconColor = Color(0xFF333E6B), // azul oscuro
-                    selectedTextColor = Color.White,
-                    unselectedTextColor = Color(0xFF333E6B)
+                    selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    unselectedIconColor =  MaterialTheme.colorScheme.secondary, // azul oscuro
+                    selectedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    unselectedTextColor = MaterialTheme.colorScheme.secondary
                 )
             )
         }
