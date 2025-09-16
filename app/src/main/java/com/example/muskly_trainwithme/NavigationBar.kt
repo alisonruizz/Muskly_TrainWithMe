@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.navigation.NavHostController
 
 
 @Composable
@@ -50,3 +51,35 @@ fun BottomNavigationBar(selectedTab: Int, onTabSelected: (Int) -> Unit) {
         }
     }
 }
+
+@Composable
+fun BottomNavigationBarWithNavController(navController: NavHostController) {
+    val items = listOf(
+        NavRoutes.Tips to Icons.Default.List,
+        NavRoutes.Goals to Icons.Default.Star
+    )
+
+    NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
+        items.forEach { (route, icon) ->
+            NavigationBarItem(
+                icon = { Icon(imageVector = icon, contentDescription = route.name) },
+                label = { Text(route.name) },
+                selected = false, // aquí podrías usar currentDestination si quieres resaltar
+                onClick = {
+                    navController.navigate(route.route) {
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    unselectedIconColor = MaterialTheme.colorScheme.secondary,
+                    selectedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    unselectedTextColor = MaterialTheme.colorScheme.secondary
+                )
+            )
+        }
+    }
+}
+

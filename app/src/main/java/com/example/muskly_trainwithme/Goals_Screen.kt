@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -72,7 +73,7 @@ class GoalsActivity : ComponentActivity() {
 @Composable
 fun GoalsScreen(onRewardEarned: (Int) -> Unit) {
     // Lista de 7 retos
-    val initialGoals = remember {
+    val initialGoals = rememberSaveable {
         listOf(
             Goal(1, "Do 50 squads", 10),
             Goal(2, "Do over 2 hours of training", 15),
