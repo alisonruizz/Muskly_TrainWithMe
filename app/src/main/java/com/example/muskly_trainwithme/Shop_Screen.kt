@@ -4,6 +4,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Checkroom
@@ -12,9 +15,11 @@ import androidx.compose.material.icons.filled.Style
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -22,16 +27,42 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.muskly_trainwithme.ui.theme.Muskly_TrainWithMeTheme
 
+data class Item(
+    val name: String,
+    val price: Int,
+    val icon: ImageVector,
+    var isEquipped: Boolean = false
+)
+
 @Composable
-fun StoreScreen() {
+fun ShopScreen() {
     var selectedTab by remember { mutableStateOf("Shop") }
-    var coins by remember { mutableStateOf(0) }
-    var characterName by remember { mutableStateOf("Musk") } // Nombre dinámico
+    var coins by rememberSaveable { mutableIntStateOf(0) }
+    var characterName by rememberSaveable { mutableStateOf("Musk") }
+
+    var shopItems by rememberSaveable {
+        mutableStateOf(
+            listOf(
+                Item("Sunglasses", 80, Icons.Default.Visibility),
+                Item("Scarf", 120, Icons.Default.Style)
+            )
+        )
+    }
+    var inventoryItems by rememberSaveable {
+        mutableStateOf(
+            listOf(
+                Item("T-shirt", 0, Icons.Default.Checkroom),
+                Item("Cap", 0, Icons.Default.Face)
+            )
+        )
+    }
+
+    var itemToBuy by remember { mutableStateOf<Item?>(null) } // para la confirmación
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.secondaryContainer) // Fondo azul clarito
+            .background(MaterialTheme.colorScheme.secondaryContainer)
             .padding(16.dp)
     ) {
         // Header con monedas
@@ -64,7 +95,7 @@ fun StoreScreen() {
             style = MaterialTheme.typography.headlineSmall.copy(
                 fontWeight = FontWeight.Bold,
                 fontSize = 35.sp,
-                color = MaterialTheme.colorScheme.secondary // Azul oscuro
+                color = MaterialTheme.colorScheme.secondary
             ),
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
@@ -92,110 +123,142 @@ fun StoreScreen() {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable { selectedTab = "Inventory" }
-            ) {
-                Text(
-                    text = "Inventory",
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontSize = 30.sp,
-                        color = MaterialTheme.colorScheme.secondary, // Azul oscuro
-                        fontWeight = if (selectedTab == "Inventory") FontWeight.Bold else FontWeight.Normal
-                    )
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                if (selectedTab == "Inventory") {
-                    Box(
-                        modifier = Modifier
-                            .height(3.dp)
-                            .fillMaxWidth()
-                            .background(Color.Green)
-                    )
-                } else {
-                    Spacer(modifier = Modifier.height(3.dp))
-                }
-            }
-
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable { selectedTab = "Shop" }
-            ) {
-                Text(
-                    text = "Shop",
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontSize = 30.sp,
-                        color = MaterialTheme.colorScheme.secondary, // Azul oscuro
-                        fontWeight = if (selectedTab == "Shop") FontWeight.Bold else FontWeight.Normal
-                    )
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                if (selectedTab == "Shop") {
-                    Box(
-                        modifier = Modifier
-                            .height(3.dp)
-                            .fillMaxWidth()
-                            .background(Color.Green)
-                    )
-                } else {
-                    Spacer(modifier = Modifier.height(3.dp))
-                }
-            }
+            TabItem(
+                title = "Inventory",
+                isSelected = selectedTab == "Inventory",
+                onClick = { selectedTab = "Inventory" },
+                modifier = Modifier.weight(1f)
+            )
+            TabItem(
+                title = "Shop",
+                isSelected = selectedTab == "Shop",
+                onClick = { selectedTab = "Shop" },
+                modifier = Modifier.weight(1f)
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // Contenido dinámico
         if (selectedTab == "Shop") {
-            ShopSection(onBuy = { coins += it })
+            ShopSection(
+                items = shopItems,
+                onBuy = { item -> itemToBuy = item }
+            )
         } else {
-            InventorySection()
+            InventorySection(
+                items = inventoryItems,
+                onToggleEquip = { item ->
+                    inventoryItems = inventoryItems.map {
+                        if (it.name == item.name) it.copy(isEquipped = !it.isEquipped) else it
+                    }
+                }
+            )
+        }
+    }
+
+    // Diálogo de confirmación de compra
+    itemToBuy?.let { item ->
+        AlertDialog(
+            onDismissRequest = { itemToBuy = null },
+            title = { Text("Confirm Purchase") },
+            text = { Text("Are you sure you want to buy ${item.name}?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    shopItems = shopItems - item
+                    inventoryItems = inventoryItems + item
+                    itemToBuy = null
+                }) {
+                    Text("Yes")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { itemToBuy = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun TabItem(
+    title: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.clickable { onClick() }
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyLarge.copy(
+                fontSize = 30.sp,
+                color = MaterialTheme.colorScheme.secondary,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+            )
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        if (isSelected) {
+            Box(
+                modifier = Modifier
+                    .height(3.dp)
+                    .fillMaxWidth()
+                    .background(Color.Green)
+            )
+        } else {
+            Spacer(modifier = Modifier.height(3.dp))
         }
     }
 }
 
 @Composable
-fun ShopSection(onBuy: (Int) -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly
+fun ShopSection(items: List<Item>, onBuy: (Item) -> Unit) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        ShopItem("Sunglasses", 80, Icons.Default.Visibility, onBuy)
-        ShopItem("Scarf", 120, Icons.Default.Style, onBuy)
+        items(items) { item ->
+            ShopItem(item = item, onBuy = { onBuy(item) })
+        }
     }
 }
 
 @Composable
-fun ShopItem(name: String, price: Int, icon: androidx.compose.ui.graphics.vector.ImageVector, onBuy: (Int) -> Unit) {
+fun ShopItem(item: Item, onBuy: () -> Unit) {
     Column(
         modifier = Modifier
-            .width(150.dp)
-            .background(MaterialTheme.colorScheme.secondary, RoundedCornerShape(12.dp)) // Azul oscuro
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.secondary, RoundedCornerShape(12.dp))
             .padding(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
-            imageVector = icon,
-            contentDescription = name,
-            tint = MaterialTheme.colorScheme.secondaryContainer, // Azul clarito
+            imageVector = item.icon,
+            contentDescription = item.name,
+            tint = MaterialTheme.colorScheme.secondaryContainer,
             modifier = Modifier.size(52.dp)
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = name,
-            color = MaterialTheme.colorScheme.secondaryContainer, // Azul clarito
+            text = item.name,
+            color = MaterialTheme.colorScheme.secondaryContainer,
             fontWeight = FontWeight.Bold,
             fontSize = 18.sp
         )
         Spacer(modifier = Modifier.height(8.dp))
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(text = "$price", color = Color.Yellow, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = "${item.price}",
+                color = Color.Yellow,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 18.sp
+            )
             Spacer(modifier = Modifier.width(4.dp))
             Image(
                 painter = painterResource(id = R.drawable.chiguicoin_png),
@@ -205,61 +268,71 @@ fun ShopItem(name: String, price: Int, icon: androidx.compose.ui.graphics.vector
         }
         Spacer(modifier = Modifier.height(8.dp))
         Button(
-            onClick = { onBuy(price) },
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer) // Verde claro
+            onClick = { onBuy() },
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
         ) {
-            Text("Buy", color = MaterialTheme.colorScheme.secondary, fontSize = 18.sp) // Azul oscuro
+            Text("Buy", color = MaterialTheme.colorScheme.secondary, fontSize = 18.sp)
         }
     }
 }
 
 @Composable
-fun InventorySection() {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly
+fun InventorySection(items: List<Item>, onToggleEquip: (Item) -> Unit) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        InventoryItem("T-shirt", Icons.Default.Checkroom)
-        InventoryItem("Cap", Icons.Default.Face)
+        items(items) { item ->
+            InventoryItem(item = item, onToggleEquip = { onToggleEquip(item) })
+        }
     }
 }
 
 @Composable
-fun InventoryItem(name: String, icon: androidx.compose.ui.graphics.vector.ImageVector) {
+fun InventoryItem(item: Item, onToggleEquip: () -> Unit) {
     Column(
         modifier = Modifier
-            .width(150.dp)
-            .background(MaterialTheme.colorScheme.secondary, RoundedCornerShape(12.dp)) // Azul oscuro
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.secondary, RoundedCornerShape(12.dp))
             .padding(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
-            imageVector = icon,
-            contentDescription = name,
-            tint = MaterialTheme.colorScheme.secondaryContainer, // Azul clarito
+            imageVector = item.icon,
+            contentDescription = item.name,
+            tint = MaterialTheme.colorScheme.secondaryContainer,
             modifier = Modifier.size(52.dp)
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = name,
-            color = MaterialTheme.colorScheme.secondaryContainer, // Azul clarito
+            text = item.name,
+            color = MaterialTheme.colorScheme.secondaryContainer,
             fontWeight = FontWeight.Bold,
             fontSize = 18.sp
         )
         Spacer(modifier = Modifier.height(8.dp))
         Button(
-            onClick = { },
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer) // Verde claro
+            onClick = { onToggleEquip() },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (item.isEquipped) Color.Red else MaterialTheme.colorScheme.primaryContainer
+            )
         ) {
-            Text("Equip", color = MaterialTheme.colorScheme.secondary, fontSize = 18.sp) // Azul oscuro
+            Text(
+                if (item.isEquipped) "Quit" else "Equip",
+                color = MaterialTheme.colorScheme.secondary,
+                fontSize = 18.sp
+            )
         }
     }
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFF1E1F2B)
 @Composable
-fun StoreScreenPreview() {
+fun ShopScreenPreview() {
     Muskly_TrainWithMeTheme {
-        StoreScreen()
+        ShopScreen()
     }
 }
