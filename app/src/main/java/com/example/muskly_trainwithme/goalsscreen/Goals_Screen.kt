@@ -1,4 +1,4 @@
-package com.example.muskly_trainwithme
+package com.example.muskly_trainwithme.goalsscreen
 
 import android.os.Build
 import android.os.Bundle
@@ -17,7 +17,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -25,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.muskly_trainwithme.R
 import com.example.muskly_trainwithme.ui.theme.Muskly_TrainWithMeTheme
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -47,44 +47,25 @@ class GoalsActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    GoalsScreen(
-                        onRewardEarned = { reward ->
-                            Toast.makeText(
-                                this,
-                                "¡Congratulations, you earned $reward chigui-coins!",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    )
+                    GoalsScreen { reward ->
+                        Toast.makeText(
+                            this,
+                            "¡Congratulations, you earned $reward chigui-coins!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             }
         }
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun GoalsScreen(onRewardEarned: (Int) -> Unit) {
-    // Lista de 7 retos
-    val initialGoals = rememberSaveable {
-        listOf(
-            Goal(1, "Do 50 squads", 10),
-            Goal(2, "Do over 2 hours of training", 15),
-            Goal(3, "Have 5 day streak", 25),
-            Goal(4, "Train all the muscles in a week", 30),
-            Goal(5, "Have a 14 day streak", 50),
-            Goal(6, "Do 100 push-ups", 20),
-            Goal(7, "Run 10 km", 40)
-        )
-    }
-
-    var goals by remember { mutableStateOf(initialGoals) }
-
-    // Resetear retos cada lunes
-    val today = LocalDate.now().dayOfWeek
-    if (today == DayOfWeek.MONDAY) {
-        goals = initialGoals.map { it.copy(completed = false) }
-    }
+fun GoalsScreen(
+    viewModel: GoalsViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
+    onRewardEarned: (Int) -> Unit
+) {
+    val goals by remember { mutableStateOf(viewModel.goals) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.secondaryContainer
@@ -96,7 +77,7 @@ fun GoalsScreen(onRewardEarned: (Int) -> Unit) {
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Parte superior con chigüiro y burbuja
+            // Parte superior
             Row(
                 verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.Center,
@@ -112,7 +93,10 @@ fun GoalsScreen(onRewardEarned: (Int) -> Unit) {
                 Box(
                     modifier = Modifier
                         .padding(start = 8.dp, top = 8.dp)
-                        .background(MaterialTheme.colorScheme.surface, shape = speechBubbleShape())
+                        .background(
+                            MaterialTheme.colorScheme.surface,
+                            shape = speechBubbleShape()
+                        )
                         .padding(12.dp)
                 ) {
                     Text(
@@ -138,24 +122,16 @@ fun GoalsScreen(onRewardEarned: (Int) -> Unit) {
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                goals.forEachIndexed { index, goal ->
+                viewModel.goals.forEach { goal ->
                     GoalItem(
                         goal = goal,
-                        onClick = {
-                            if (!goal.completed) {
-                                val updated = goals.toMutableList()
-                                updated[index] = goal.copy(completed = true)
-                                goals = updated
-                                onRewardEarned(goal.reward)
-                            }
-                        }
+                        onClick = { viewModel.completeGoal(goal, onRewardEarned) }
                     )
                 }
             }
         }
     }
 }
-
 @Composable
 fun GoalItem(goal: Goal, onClick: () -> Unit) {
     Row(

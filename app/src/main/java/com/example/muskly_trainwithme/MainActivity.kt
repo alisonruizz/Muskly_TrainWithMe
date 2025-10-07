@@ -22,6 +22,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             Muskly_TrainWithMeTheme {
                 MainContent()
+                Scaffold { paddingValues ->
+                    AppNavigation(modifier = androidx.compose.ui.Modifier.padding(paddingValues))
+                }
+                //trainScreen()
             }
         }
     }
