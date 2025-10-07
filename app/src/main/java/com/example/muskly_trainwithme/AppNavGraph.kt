@@ -7,7 +7,10 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.muskly_trainwithme.goalsscreen.GoalsScreen
+import com.example.muskly_trainwithme.shopscreen.ShopScreen
 import com.example.muskly_trainwithme.trainscreen.trainScreen
+import com.example.muskly_trainwithme.ui.tips.TipsScreen
 
 // === RUTAS DE NAVEGACIÓN ===
 enum class NavRoutes(val route: String) {
