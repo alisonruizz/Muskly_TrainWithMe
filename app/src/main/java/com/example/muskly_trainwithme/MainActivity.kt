@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
+import com.example.muskly_trainwithme.trainscreen.trainScreen
 import com.example.muskly_trainwithme.ui.theme.Muskly_TrainWithMeTheme
 
 class MainActivity : ComponentActivity() {
@@ -13,9 +14,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             Muskly_TrainWithMeTheme {
-                Scaffold { paddingValues ->
-                    AppNavigation(modifier = androidx.compose.ui.Modifier.padding(paddingValues))
-                }
+                //Scaffold { paddingValues ->
+                  //  AppNavigation(modifier = androidx.compose.ui.Modifier.padding(paddingValues))
+                //}
+                trainScreen()
             }
         }
     }

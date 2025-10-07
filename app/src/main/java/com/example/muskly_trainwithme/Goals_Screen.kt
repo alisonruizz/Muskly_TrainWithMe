@@ -10,9 +10,11 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
@@ -32,9 +34,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.muskly_trainwithme.trainscreen.AddExerciseDialog
+import com.example.muskly_trainwithme.trainscreen.trainingViewModel
 import com.example.muskly_trainwithme.ui.theme.Muskly_TrainWithMeTheme
 import java.time.DayOfWeek
 import java.time.LocalDate
+import kotlin.collections.forEachIndexed
 
 // Modelo de reto
 data class Goal(
@@ -131,6 +136,8 @@ fun GoalsScreen(onRewardEarned: (Int) -> Unit) {
                         .padding(12.dp)
                 ) {
                     Text(
+
+
                         text = stringResource(R.string.musk_message), // de strings.xml
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
@@ -245,3 +252,5 @@ fun GoalsScreenPreview() {
         )
     }
 }
+
+
