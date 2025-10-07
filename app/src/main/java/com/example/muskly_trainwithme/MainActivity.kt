@@ -17,7 +17,9 @@ class MainActivity : ComponentActivity() {
                 //Scaffold { paddingValues ->
                   //  AppNavigation(modifier = androidx.compose.ui.Modifier.padding(paddingValues))
                 //}
-                trainScreen()
+                //trainScreen()
+                //ShopScreen()
+                TrainStartScreen()
             }
         }
     }
