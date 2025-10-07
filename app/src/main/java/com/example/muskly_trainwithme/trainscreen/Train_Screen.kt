@@ -37,6 +37,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -149,7 +150,8 @@ fun trainScreen(viewModel: trainingViewModel = androidx.lifecycle.viewmodel.comp
                                 ),
                                 modifier = Modifier.padding(horizontal = 2.dp)
                             ) {
-                                Text(day, fontSize = 12.sp)
+                                Text(day, fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.outline)
                             }
                         }
                     }
@@ -158,7 +160,9 @@ fun trainScreen(viewModel: trainingViewModel = androidx.lifecycle.viewmodel.comp
 
                     // Lista de ejercicios
                     selectedDay?.let { day ->
-                        val exercises = viewModel.routines[day] ?: emptyList()
+
+                        val routines by viewModel.routines.collectAsState()
+                        val exercises = routines[selectedDay] ?: emptyList()
 
                         if (exercises.isEmpty()) {
                             Text("No exercises added for $day", color = Color.Gray)
@@ -182,9 +186,8 @@ fun trainScreen(viewModel: trainingViewModel = androidx.lifecycle.viewmodel.comp
                                         }
                                         IconButton(onClick = {
                                             // Protección: no intentar borrar si el índice ya no existe
-                                            if (index < (viewModel.routines[day]?.size ?: 0)) {
                                                 viewModel.removeExercise(day, index)
-                                            }
+
                                         }) {
                                             Icon(Icons.Default.Delete, contentDescription = "Delete")
                                         }
