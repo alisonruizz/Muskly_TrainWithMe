@@ -1,4 +1,4 @@
-package com.example.muskly_trainwithme
+package com.example.muskly_trainwithme.shopscreen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -25,39 +25,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.muskly_trainwithme.R
 import com.example.muskly_trainwithme.ui.theme.Muskly_TrainWithMeTheme
 
-data class Item(
-    val name: String,
-    val price: Int,
-    val icon: ImageVector,
-    var isEquipped: Boolean = false
-)
 
 @Composable
-fun ShopScreen() {
-    var selectedTab by remember { mutableStateOf("Shop") }
-    var coins by rememberSaveable { mutableIntStateOf(0) }
-    var characterName by rememberSaveable { mutableStateOf("Musk") }
+fun ShopScreen(viewModel: ShopViewModel = viewModel()) {
 
-    var shopItems by rememberSaveable {
-        mutableStateOf(
-            listOf(
-                Item("Sunglasses", 80, Icons.Default.Visibility),
-                Item("Scarf", 120, Icons.Default.Style)
-            )
-        )
-    }
-    var inventoryItems by rememberSaveable {
-        mutableStateOf(
-            listOf(
-                Item("T-shirt", 0, Icons.Default.Checkroom),
-                Item("Cap", 0, Icons.Default.Face)
-            )
-        )
-    }
-
-    var itemToBuy by remember { mutableStateOf<Item?>(null) } // para la confirmación
+    val coins = viewModel.coins
+    val characterName = viewModel.characterName
+    val selectedTab = viewModel.selectedTab
+    val shopItems = viewModel.shopItems
+    val inventoryItems = viewModel.inventoryItems
+    val itemToBuy = viewModel.itemToBuy
 
     Column(
         modifier = Modifier
@@ -102,7 +83,7 @@ fun ShopScreen() {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Personaje
+        // Imagen del personaje
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -118,7 +99,7 @@ fun ShopScreen() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Tabs Inventory / Shop
+        // Tabs
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
@@ -126,13 +107,13 @@ fun ShopScreen() {
             TabItem(
                 title = "Inventory",
                 isSelected = selectedTab == "Inventory",
-                onClick = { selectedTab = "Inventory" },
+                onClick = { viewModel.selectTab("Inventory") },
                 modifier = Modifier.weight(1f)
             )
             TabItem(
                 title = "Shop",
                 isSelected = selectedTab == "Shop",
-                onClick = { selectedTab = "Shop" },
+                onClick = { viewModel.selectTab("Shop") },
                 modifier = Modifier.weight(1f)
             )
         }
@@ -141,39 +122,25 @@ fun ShopScreen() {
 
         // Contenido dinámico
         if (selectedTab == "Shop") {
-            ShopSection(
-                items = shopItems,
-                onBuy = { item -> itemToBuy = item }
-            )
+            ShopSection(items = shopItems, onBuy = { viewModel.showBuyDialog(it) })
         } else {
-            InventorySection(
-                items = inventoryItems,
-                onToggleEquip = { item ->
-                    inventoryItems = inventoryItems.map {
-                        if (it.name == item.name) it.copy(isEquipped = !it.isEquipped) else it
-                    }
-                }
-            )
+            InventorySection(items = inventoryItems, onToggleEquip = { viewModel.toggleEquip(it) })
         }
     }
 
-    // Diálogo de confirmación de compra
+    // Diálogo de compra
     itemToBuy?.let { item ->
         AlertDialog(
-            onDismissRequest = { itemToBuy = null },
+            onDismissRequest = { viewModel.dismissDialog() },
             title = { Text("Confirm Purchase") },
             text = { Text("Are you sure you want to buy ${item.name}?") },
             confirmButton = {
-                TextButton(onClick = {
-                    shopItems = shopItems - item
-                    inventoryItems = inventoryItems + item
-                    itemToBuy = null
-                }) {
+                TextButton(onClick = { viewModel.confirmPurchase(item) }) {
                     Text("Yes")
                 }
             },
             dismissButton = {
-                TextButton(onClick = { itemToBuy = null }) {
+                TextButton(onClick = { viewModel.dismissDialog() }) {
                     Text("Cancel")
                 }
             }
