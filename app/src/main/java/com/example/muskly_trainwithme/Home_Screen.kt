@@ -39,7 +39,7 @@ class TrainStartActivity : ComponentActivity() {
 
 @Composable
 fun TrainStartScreen() {
-    var xpProgress by remember { mutableStateOf(0.6f) } // progreso (0 a 1)
+    var xpProgress by remember { mutableStateOf(0.6f) } // progreso
     var currentXP by remember { mutableStateOf(370) }   // XP actual
     var maxXP by remember { mutableStateOf(500) }       // XP total para subir de nivel
 
@@ -57,7 +57,7 @@ fun TrainStartScreen() {
     ) {
         Spacer(modifier = Modifier.height(20.dp))
 
-        // ==== Sección XP ====
+        //Sección XP
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -73,7 +73,7 @@ fun TrainStartScreen() {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                // ==== Barra de XP ====
+                //Barra de XP
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
@@ -81,7 +81,7 @@ fun TrainStartScreen() {
                         .clip(RoundedCornerShape(50))
                         .background(barBackgroundColor)
                 ) {
-                    // Parte verde (progreso)
+                    // Parte verde que es el progreso
                     Box(
                         modifier = Modifier
                             .fillMaxWidth(xpProgress)
@@ -89,13 +89,13 @@ fun TrainStartScreen() {
                             .background(progressColor)
                     )
 
-                    // Texto dentro de la barra verde (XP actual)
+                    // Texto dentro de la barra verde que indica el XP actual
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(end = 8.dp) // pequeño margen al borde
+                            .padding(end = 8.dp)
                     ) {
-                        val offset = (xpProgress * 280).dp - 35.dp // deja el número un poco antes del borde
+                        val offset = (xpProgress * 280).dp - 35.dp
                         Text(
                             text = "$currentXP",
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -110,7 +110,7 @@ fun TrainStartScreen() {
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                // Texto a la derecha con el XP total
+                // XP total
                 Text(
                     text = "/ $maxXP XP",
                     fontSize = 14.sp,
@@ -120,7 +120,7 @@ fun TrainStartScreen() {
             }
         }
 
-        // ==== Burbuja + Mascota ====
+        // Burbuja de diálogo y mascota
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy((-10).dp)
@@ -148,7 +148,7 @@ fun TrainStartScreen() {
             )
         }
 
-        // ==== Botón Start Train ====
+        //Botón Start train
         Button(
             onClick = {
                 if (currentXP < maxXP) {

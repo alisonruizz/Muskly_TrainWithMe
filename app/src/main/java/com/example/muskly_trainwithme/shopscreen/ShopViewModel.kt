@@ -48,7 +48,7 @@ class ShopViewModel : ViewModel() {
         private set
 
 
-    // --- Funciones de negocio ---
+    //Funciones de negocio
 
     fun selectTab(tab: String) {
         selectedTab = tab

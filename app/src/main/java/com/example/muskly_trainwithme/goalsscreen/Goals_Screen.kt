@@ -10,8 +10,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.GenericShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -26,8 +26,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.muskly_trainwithme.R
 import com.example.muskly_trainwithme.ui.theme.Muskly_TrainWithMeTheme
-import java.time.DayOfWeek
-import java.time.LocalDate
 
 // Modelo de reto
 data class Goal(
@@ -50,7 +48,7 @@ class GoalsActivity : ComponentActivity() {
                     GoalsScreen { reward ->
                         Toast.makeText(
                             this,
-                            "¡Congratulations, you earned $reward chigui-coins!",
+                            "Congratulations, you earned $reward chigui-coins!",
                             Toast.LENGTH_SHORT
                         ).show()
                     }
@@ -65,7 +63,15 @@ fun GoalsScreen(
     viewModel: GoalsViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
     onRewardEarned: (Int) -> Unit
 ) {
-    val goals by remember { mutableStateOf(viewModel.goals) }
+    var sortOption by rememberSaveable { mutableStateOf("All") }
+
+    val sortedGoals = remember(viewModel.goals, sortOption) {
+        when (sortOption) {
+            "Completed" -> viewModel.goals.filter { it.completed }
+            "Pending" -> viewModel.goals.filter { !it.completed }
+            else -> viewModel.goals
+        }
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.secondaryContainer
@@ -77,7 +83,6 @@ fun GoalsScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Parte superior
             Row(
                 verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.Center,
@@ -110,28 +115,74 @@ fun GoalsScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Text(
-                text = "Your goals",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(vertical = 8.dp),
-                color = MaterialTheme.colorScheme.onBackground
-            )
+            // Título y dropdown Sort by
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "Your goals",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+
+                var expanded by remember { mutableStateOf(false) }
+                Box {
+                    TextButton(onClick = { expanded = true }) {
+                        Text("Sort by: $sortOption")
+                    }
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("All") },
+                            onClick = {
+                                sortOption = "All"
+                                expanded = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Completed") },
+                            onClick = {
+                                sortOption = "Completed"
+                                expanded = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Pending") },
+                            onClick = {
+                                sortOption = "Pending"
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
 
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                viewModel.goals.forEach { goal ->
+                sortedGoals.forEach { goal ->
                     GoalItem(
                         goal = goal,
-                        onClick = { viewModel.completeGoal(goal, onRewardEarned) }
+                        onClick = {
+                            viewModel.completeGoal(goal) { reward ->
+                                onRewardEarned(reward)
+                            }
+                        }
                     )
                 }
             }
         }
     }
 }
+
 @Composable
 fun GoalItem(goal: Goal, onClick: () -> Unit) {
     Row(
@@ -175,7 +226,7 @@ fun GoalItem(goal: Goal, onClick: () -> Unit) {
     }
 }
 
-// Forma de la burbuja de diálogo
+// Función para el cuadro de diálogo
 fun speechBubbleShape(): GenericShape {
     return GenericShape { size, _ ->
         val cornerRadius = 40f

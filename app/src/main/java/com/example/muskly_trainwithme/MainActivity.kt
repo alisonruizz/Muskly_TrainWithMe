@@ -36,10 +36,10 @@ fun MainContent() {
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.secondaryContainer)
     ) {
-        // Contenido principal (navegación)
+        // Contenido principal
         AppNavigation(modifier = Modifier.fillMaxSize())
 
-        // Ícono del signo de pregunta en la esquina superior derecha
+        // Ícono del signo de pregunta para la descripción y créditos
         IconButton(
             onClick = { showCredits = true },
             modifier = Modifier
@@ -53,7 +53,6 @@ fun MainContent() {
             )
         }
 
-        // === Diálogo con créditos ===
         if (showCredits) {
             AlertDialog(
                 onDismissRequest = { showCredits = false },
@@ -68,25 +67,26 @@ fun MainContent() {
                     }
                 },
                 title = {
-                    Text("Acerca de la aplicación", fontSize = 20.sp)
+                    Text("About the app", fontSize = 20.sp)
                 },
                 text = {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
-                        // === Descripción justificada ===
+                        //Descripción
                         Text(
-                            text = "Muskly es una app para mantenerte motivado en el gimnasio gracias al acompañamiento de una mascota virtual, registra tus rutinas y completa retos que impulsen tu progreso. Al completar entrenamientos y retos, ayudas a su mascota a mejorar su condición, donde los puntos obtenidos sirven para desbloquear ropa, accesorios y apariencias, haciendo el entrenamiento más divertido y motivador.",
+                            text = "Muskly is an app to keep you motivated at the gym with the help of a virtual pet. Track your routines and complete challenges to boost your progress. " +
+                                    "By completing workouts and challenges, you help your pet improve its fitness. The points you earn can be used to unlock clothing, accessories, and skins, making training more fun and motivating.",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onBackground,
                             textAlign = TextAlign.Justify
                         )
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // === Créditos centrados ===
+                        //Créditos
                         Text(
-                            text = "Créditos:\nAlison Daniela Ruiz\nJuan José Ángel Durán",
+                            text = "Credits:\nAlison Daniela Ruiz\nJuan José Ángel Durán",
                             style = MaterialTheme.typography.bodyLarge,
                             lineHeight = 24.sp,
                             color = MaterialTheme.colorScheme.onBackground,

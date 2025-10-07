@@ -46,7 +46,7 @@ fun ShopScreen(viewModel: ShopViewModel = viewModel()) {
             .background(MaterialTheme.colorScheme.secondaryContainer)
             .padding(16.dp)
     ) {
-        // Header con monedas
+        // Monedas
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Start,
@@ -83,7 +83,7 @@ fun ShopScreen(viewModel: ShopViewModel = viewModel()) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Imagen del personaje
+        // Imagen del capybara
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -99,7 +99,7 @@ fun ShopScreen(viewModel: ShopViewModel = viewModel()) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Tabs
+        // sección de tienda e inventario
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
@@ -128,7 +128,7 @@ fun ShopScreen(viewModel: ShopViewModel = viewModel()) {
         }
     }
 
-    // Diálogo de compra
+    // Diálogo de compra, para confirmación
     itemToBuy?.let { item ->
         AlertDialog(
             onDismissRequest = { viewModel.dismissDialog() },

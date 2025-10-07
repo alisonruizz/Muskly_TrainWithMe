@@ -12,7 +12,7 @@ import com.example.muskly_trainwithme.shopscreen.ShopScreen
 import com.example.muskly_trainwithme.trainscreen.trainScreen
 import com.example.muskly_trainwithme.ui.tips.TipsScreen
 
-// === RUTAS DE NAVEGACIÓN ===
+//Rutas
 enum class NavRoutes(val route: String) {
     Home("home"),
     Train("train"),
