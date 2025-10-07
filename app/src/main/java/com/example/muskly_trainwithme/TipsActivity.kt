@@ -1,7 +1,6 @@
 package com.example.muskly_trainwithme
 
 import android.os.Bundle
-
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
@@ -9,24 +8,20 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.muskly_trainwithme.ui.theme.Muskly_TrainWithMeTheme
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.ui.res.painterResource
-
-
 
 data class Tip(val category: String, val short: String, val details: String)
 
@@ -34,7 +29,7 @@ class TipsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme {
+            Muskly_TrainWithMeTheme {
                 TipsScreen()
             }
         }
@@ -43,7 +38,7 @@ class TipsActivity : AppCompatActivity() {
 
 @Composable
 fun TipsScreen() {
-    // Estado global: guarda el índice del consejo expandido
+    // Estado del consejo expandido
     var expandedIndex by remember { mutableStateOf<String?>(null) }
 
     val allTips = listOf(
@@ -54,7 +49,7 @@ fun TipsScreen() {
         Tip("Exercise", "Change routine every 6–8 weeks", "Your body adapts quickly. Add variation to avoid plateaus."),
         Tip("Exercise", "Don’t go to failure every set", "Save failure training for your last set of an exercise."),
         Tip("Exercise", "Cardio is also important", "Even if your goal is muscle growth, cardio keeps your heart healthy and improves recovery."),
-        Tip("Exercise", "Track more than weight", "Measure s  trength, endurance, and body composition, not just the scale."),
+        Tip("Exercise", "Track more than weight", "Measure strength, endurance, and body composition, not just the scale."),
         Tip("Exercise","Stay hydrated", "Drink water during training to avoid cramps and fatigue."),
         Tip("Exercise","Consistency beats intensity", "Training regularly is more important than going all-out once in a while."),
         Tip("Technique", "Form over weight", "Better to lift less but correctly. Good form prevents injuries and maximizes gains."),
@@ -79,30 +74,22 @@ fun TipsScreen() {
         Tip("Rest",    "Listen to your body", "If you’re exhausted, skipping one workout may be better than pushing through.")
     )
 
-
     val categories = allTips
         .groupBy { it.category }
         .map { (category, tips) -> category to tips.shuffled().take(2) }
 
-
-    var selectedTab by remember { mutableStateOf(2) }
-
+    // Ya no necesitamos bottomBar ni selectedTab, solo el contenido:
     Scaffold(
-        bottomBar = {
-            BottomNavigationBar(
-                selectedTab = selectedTab,
-                onTabSelected = { selectedTab = it }
-            )
-        }
+        containerColor = MaterialTheme.colorScheme.secondaryContainer
     ) { padding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.secondaryContainer)
+                .padding(padding)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp)
-
         ) {
             item {
                 Image(
@@ -122,16 +109,14 @@ fun TipsScreen() {
                 )
             }
 
-            categories.forEach{ (categoryName, tips) ->
+            categories.forEach { (categoryName, tips) ->
                 item {
                     Text(
                         text = categoryName,
                         style = MaterialTheme.typography.titleMedium,
                         color = Color.Black,
                         fontSize = 28.sp,
-                        modifier = Modifier
-
-                            .padding(vertical = 8.dp, horizontal = 16.dp)
+                        modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp)
                     )
                 }
 
@@ -156,7 +141,6 @@ fun TipsScreen() {
                                     text = tip.short,
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = Color.White
-
                                 )
                                 IconButton(
                                     onClick = {
@@ -195,10 +179,8 @@ fun TipsScreen() {
 
 @Preview(showBackground = true)
 @Composable
-fun tipsPreview() {
+fun TipsPreview() {
     Muskly_TrainWithMeTheme {
         TipsScreen()
-
     }
 }
-

@@ -9,35 +9,44 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.muskly_trainwithme.trainscreen.trainScreen
 
-// Definimos las rutas con enum
+// === RUTAS DE NAVEGACIÓN ===
 enum class NavRoutes(val route: String) {
+    Home("home"),
+    Train("train"),
     Tips("tips"),
     Goals("goals"),
-
+    Shop("shop")
 }
 
 @Composable
 fun AppNavigation(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
 
-    Scaffold (
+    Scaffold(
         bottomBar = {
             BottomNavigationBarWithNavController(navController = navController)
         }
     ) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = NavRoutes.Tips.route,
+            startDestination = NavRoutes.Home.route, // Ruta inicial por defecto
             modifier = modifier.padding(paddingValues)
         ) {
+            composable(NavRoutes.Home.route) {
+                TrainStartScreen()
+            }
+            composable(NavRoutes.Train.route) {
+                trainScreen()
+            }
             composable(NavRoutes.Tips.route) {
                 TipsScreen()
             }
             composable(NavRoutes.Goals.route) {
                 GoalsScreen(onRewardEarned = {})
             }
-
+            composable(NavRoutes.Shop.route) {
+                ShopScreen()
+            }
         }
     }
 }
-
