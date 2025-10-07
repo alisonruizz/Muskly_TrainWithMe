@@ -22,10 +22,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             Muskly_TrainWithMeTheme {
                 MainContent()
-                Scaffold { paddingValues ->
-                    AppNavigation(modifier = androidx.compose.ui.Modifier.padding(paddingValues))
-                }
-                //trainScreen()
             }
         }
     }
@@ -81,7 +77,7 @@ fun MainContent() {
                     ) {
                         // === Descripción justificada ===
                         Text(
-                            text = "Muskly es una app para mantenerte motivado en el gimnasio gracias al acompañamiento de una mascota virtual, permitiendo registrar rutinas y completar retos que impulsen tu progreso. Al completar entrenamientos y retos, ayudas a su mascota virtual a mejorar su condición, donde los puntos obtenidos sirven para desbloquear ropa, accesorios y apariencias, haciendo el entrenamiento más divertido y motivador.",
+                            text = "Muskly es una app para mantenerte motivado en el gimnasio gracias al acompañamiento de una mascota virtual, registra tus rutinas y completa retos que impulsen tu progreso. Al completar entrenamientos y retos, ayudas a su mascota a mejorar su condición, donde los puntos obtenidos sirven para desbloquear ropa, accesorios y apariencias, haciendo el entrenamiento más divertido y motivador.",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onBackground,
                             textAlign = TextAlign.Justify
