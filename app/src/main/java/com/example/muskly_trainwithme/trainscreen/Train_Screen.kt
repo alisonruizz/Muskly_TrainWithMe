@@ -143,7 +143,7 @@ fun trainScreen(viewModel: trainingViewModel = androidx.lifecycle.viewmodel.comp
                                 onClick = { selectedDay = day },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = if (selectedDay == day)
-                                        MaterialTheme.colorScheme.primary
+                                        MaterialTheme.colorScheme.primaryContainer
                                     else MaterialTheme.colorScheme.outlineVariant
                                 ),
                                 modifier = Modifier.padding(horizontal = 2.dp)
@@ -198,6 +198,10 @@ fun trainScreen(viewModel: trainingViewModel = androidx.lifecycle.viewmodel.comp
 
                         Button(
                             onClick = { showForm = true },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.outline   // Color del texto y otros elementos
+                            ),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text("Add exercise")
@@ -220,7 +224,27 @@ fun trainScreen(viewModel: trainingViewModel = androidx.lifecycle.viewmodel.comp
     }
 }
 
-
+@Composable
+fun CustomTextField(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    keyboardType: KeyboardType = KeyboardType.Text
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        colors = TextFieldDefaults.colors(
+            unfocusedContainerColor = MaterialTheme.colorScheme.outlineVariant,
+            focusedContainerColor = MaterialTheme.colorScheme.primaryContainer
+        ),
+        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = keyboardType),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+    )
+}
 @Composable
 fun AddExerciseDialog(onDismiss: () -> Unit, onSave: (Exercise) -> Unit) {
     var name by rememberSaveable { mutableStateOf("") }
@@ -231,11 +255,17 @@ fun AddExerciseDialog(onDismiss: () -> Unit, onSave: (Exercise) -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
-            Button(onClick = {
-                if (name.isNotBlank() && series.isNotBlank() && reps.isNotBlank() && weight.isNotBlank()) {
-                    onSave(Exercise(name, series.toInt(), reps.toInt(), weight.toInt()))
-                }
-            }) {
+            Button(
+                onClick = {
+                    if (name.isNotBlank() && series.isNotBlank() && reps.isNotBlank() && weight.isNotBlank()) {
+                        onSave(Exercise(name, series.toInt(), reps.toInt(), weight.toInt()))
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.outline
+                )
+            ) {
                 Text("Save")
             }
         },
@@ -245,37 +275,33 @@ fun AddExerciseDialog(onDismiss: () -> Unit, onSave: (Exercise) -> Unit) {
         title = { Text("Add Exercise") },
         text = {
             Column {
-                OutlinedTextField(
+                CustomTextField(
+                    label = "Exercise name",
                     value = name,
-                    onValueChange = { name = it },
-                    label = { Text("Exercise name") },
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Text
-                    )
+                    onValueChange = { name = it }
                 )
-                OutlinedTextField(
+                CustomTextField(
+                    label = "Series",
                     value = series,
-                    onValueChange = { if (it.all { ch -> ch.isDigit() }) series = it },
-                    label = { Text("Series") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    onValueChange = { if (it.all(Char::isDigit)) series = it },
+                    keyboardType = KeyboardType.Number
                 )
-                OutlinedTextField(
+                CustomTextField(
+                    label = "Reps",
                     value = reps,
-                    onValueChange = { if (it.all { ch -> ch.isDigit() }) reps = it },
-                    label = { Text("Reps") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    onValueChange = { if (it.all(Char::isDigit)) reps = it },
+                    keyboardType = KeyboardType.Number
                 )
-                OutlinedTextField(
+                CustomTextField(
+                    label = "Weight (kg)",
                     value = weight,
-                    onValueChange = { if (it.all { ch -> ch.isDigit() }) weight = it },
-                    label = { Text("Weight (kg)") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    onValueChange = { if (it.all(Char::isDigit)) weight = it },
+                    keyboardType = KeyboardType.Number
                 )
             }
         }
     )
 }
-
 
 @Preview(showBackground = true)
 @Composable
