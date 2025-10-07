@@ -117,6 +117,7 @@ fun trainScreen(viewModel: trainingViewModel = androidx.lifecycle.viewmodel.comp
                         label = { Text("Pet name") },
                         shape = CircleShape,
                         colors = TextFieldDefaults.colors(
+                            focusedLabelColor = Color.White,
                             // Color del contenedor cuando no está enfocado
                             unfocusedContainerColor = MaterialTheme.colorScheme.outlineVariant,
                             // Color del contenedor cuando está enfocado

@@ -19,7 +19,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.muskly_trainwithme.R
 import com.example.muskly_trainwithme.ui.theme.Muskly_TrainWithMeTheme
+import androidx.compose.ui.graphics.Color
 
 class TrainStartActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,13 +41,21 @@ class TrainStartActivity : ComponentActivity() {
 
 @Composable
 fun TrainStartScreen() {
-    var xpProgress by remember { mutableStateOf(0.6f) } // progreso
-    var currentXP by remember { mutableStateOf(370) }   // XP actual
-    var maxXP by remember { mutableStateOf(500) }       // XP total para subir de nivel
+    var xpProgress by remember { mutableStateOf(0.6f) } // solo visual
+    var currentXP by remember { mutableStateOf(370) }
+    var maxXP by remember { mutableStateOf(500) }
+
+    // Estados para los diálogos
+    var showFirstSetDialog by remember { mutableStateOf(false) }
+    var showRestDialog by remember { mutableStateOf(false) }
 
     val backgroundColor = MaterialTheme.colorScheme.secondaryContainer
     val progressColor = MaterialTheme.colorScheme.primaryContainer
     val barBackgroundColor = MaterialTheme.colorScheme.onSecondaryContainer
+
+    // Colores para los botones de los diálogos (verde estilo Start Train)
+    val dialogButtonBackground = MaterialTheme.colorScheme.primaryContainer
+    val dialogButtonText = MaterialTheme.colorScheme.primary
 
     Column(
         modifier = Modifier
@@ -57,7 +67,7 @@ fun TrainStartScreen() {
     ) {
         Spacer(modifier = Modifier.height(20.dp))
 
-        //Sección XP
+        // Sección XP
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -73,7 +83,6 @@ fun TrainStartScreen() {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                //Barra de XP
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
@@ -81,7 +90,6 @@ fun TrainStartScreen() {
                         .clip(RoundedCornerShape(50))
                         .background(barBackgroundColor)
                 ) {
-                    // Parte verde que es el progreso
                     Box(
                         modifier = Modifier
                             .fillMaxWidth(xpProgress)
@@ -89,7 +97,6 @@ fun TrainStartScreen() {
                             .background(progressColor)
                     )
 
-                    // Texto dentro de la barra verde que indica el XP actual
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -110,7 +117,6 @@ fun TrainStartScreen() {
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                // XP total
                 Text(
                     text = "/ $maxXP XP",
                     fontSize = 14.sp,
@@ -120,7 +126,7 @@ fun TrainStartScreen() {
             }
         }
 
-        // Burbuja de diálogo y mascota
+        // Burbuja y mascota
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy((-10).dp)
@@ -148,13 +154,10 @@ fun TrainStartScreen() {
             )
         }
 
-        //Botón Start train
+        // Botón Start train
         Button(
             onClick = {
-                if (currentXP < maxXP) {
-                    currentXP += 10
-                    xpProgress = currentXP.toFloat() / maxXP.toFloat()
-                }
+                showFirstSetDialog = true
             },
             colors = ButtonDefaults.buttonColors(containerColor = progressColor),
             shape = RoundedCornerShape(12.dp),
@@ -163,7 +166,7 @@ fun TrainStartScreen() {
                 .height(55.dp)
         ) {
             Text(
-                text = "Start train",
+                text = "Start Train",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -171,6 +174,111 @@ fun TrainStartScreen() {
         }
 
         Spacer(modifier = Modifier.height(24.dp))
+    }
+
+    // Dialogo primer set
+    if (showFirstSetDialog) {
+        AlertDialog(
+            onDismissRequest = { showFirstSetDialog = false },
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            shape = RoundedCornerShape(16.dp),
+            title = {
+                Text(
+                    text = "First Set Started",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            },
+            text = {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "Your first set has begun!\nFollow the instructions to complete it.",
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Image(
+                        painter = painterResource(id = R.drawable.happybara_png),
+                        contentDescription = "Mascota Musk",
+                        modifier = Modifier.size(120.dp),
+                        contentScale = ContentScale.Fit
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showFirstSetDialog = false
+                        showRestDialog = true
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = dialogButtonBackground),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                ) {
+                    Text(
+                        text = "End Set",
+                        fontWeight = FontWeight.Bold,
+                        color = dialogButtonText
+                    )
+                }
+            }
+        )
+    }
+
+    // Dialogo descanso
+    if (showRestDialog) {
+        AlertDialog(
+            onDismissRequest = { showRestDialog = false },
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            shape = RoundedCornerShape(16.dp),
+            title = {
+                Text(
+                    text = "Rest",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            },
+            text = {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "Take a short rest before your next set.",
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Image(
+                        painter = painterResource(id = R.drawable.capybara_rest_png),
+                        contentDescription = "Mascota en descanso",
+                        modifier = Modifier.size(120.dp),
+                        contentScale = ContentScale.Fit
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showRestDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = dialogButtonBackground),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                ) {
+                    Text(
+                        text = "Go to the next set",
+                        fontWeight = FontWeight.Bold,
+                        color = dialogButtonText
+                    )
+                }
+            }
+        )
     }
 }
 
