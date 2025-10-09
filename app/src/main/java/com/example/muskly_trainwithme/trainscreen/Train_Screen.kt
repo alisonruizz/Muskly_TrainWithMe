@@ -85,13 +85,13 @@ fun trainScreen(viewModel: trainingViewModel = androidx.lifecycle.viewmodel.comp
                 .padding(innerPadding)
                 .padding(16.dp)
                 .clickable(
-                    // Si tocas fuera del campo, quita el foco del teclado
+                    // Si toca fuera del campo, quita el foco del teclado
                     indication = null,
                     interactionSource = remember { MutableInteractionSource() }
                 ) { focusManager.clearFocus() },
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Imagen de mascota
+            // Imagen del capybara
             Image(
                 painter = painterResource(id = R.drawable.musktrain),
                 contentDescription = "Mascot",
@@ -115,8 +115,9 @@ fun trainScreen(viewModel: trainingViewModel = androidx.lifecycle.viewmodel.comp
                         value = petName,
                         onValueChange = { petName = it },
                         label = { Text("Pet name") },
-                        shape = CircleShape, // Bordes redondeados
+                        shape = CircleShape,
                         colors = TextFieldDefaults.colors(
+                            focusedLabelColor = Color.White,
                             // Color del contenedor cuando no está enfocado
                             unfocusedContainerColor = MaterialTheme.colorScheme.outlineVariant,
                             // Color del contenedor cuando está enfocado
@@ -200,7 +201,7 @@ fun trainScreen(viewModel: trainingViewModel = androidx.lifecycle.viewmodel.comp
                             onClick = { showForm = true },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                contentColor = MaterialTheme.colorScheme.outline   // Color del texto y otros elementos
+                                contentColor = MaterialTheme.colorScheme.outline
                             ),
                             modifier = Modifier.fillMaxWidth()
                         ) {

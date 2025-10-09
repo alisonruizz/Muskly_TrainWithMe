@@ -54,3 +54,4 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 # KSP (Kotlin Symbol Processing) Plugin
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 
+

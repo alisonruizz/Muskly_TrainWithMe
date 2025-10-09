@@ -18,7 +18,7 @@ import com.example.muskly_trainwithme.ui.tips.TipsScreen
 import com.example.muskly_trainwithme.viewmodel.MascotaViewModel
 import com.example.muskly_trainwithme.viewmodel.MascotaViewModelFactory
 
-// === RUTAS DE NAVEGACIÓN ===
+//Rutas
 enum class NavRoutes(val route: String) {
     Home("home"),
     Train("train"),

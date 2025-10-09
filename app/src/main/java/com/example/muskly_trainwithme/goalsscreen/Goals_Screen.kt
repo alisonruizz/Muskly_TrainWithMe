@@ -1,9 +1,11 @@
 package com.example.muskly_trainwithme.goalsscreen
 
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,22 +14,20 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModelProvider
 import com.example.muskly_trainwithme.R
-import com.example.muskly_trainwithme.data.MascotaDatabase
-import com.example.muskly_trainwithme.repository.MascotaRepository
 import com.example.muskly_trainwithme.ui.theme.Muskly_TrainWithMeTheme
-import com.example.muskly_trainwithme.viewmodel.MascotaViewModel
-import com.example.muskly_trainwithme.viewmodel.MascotaViewModelFactory
+import java.time.DayOfWeek
+import java.time.LocalDate
 
 // Modelo de reto
 data class Goal(
@@ -38,32 +38,22 @@ data class Goal(
 )
 
 class GoalsActivity : ComponentActivity() {
-
-    private lateinit var mascotaViewModel: MascotaViewModel
-
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Configurar DB y ViewModel de Mascota
-        val database = MascotaDatabase.getDatabase(this)
-        val repository = MascotaRepository(database.mascotaDao())
-        val factory = MascotaViewModelFactory(repository)
-        mascotaViewModel = ViewModelProvider(this, factory)[MascotaViewModel::class.java]
-
         setContent {
             Muskly_TrainWithMeTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    GoalsScreen(
-                        mascotaViewModel = mascotaViewModel,
-                        onRewardEarned = { reward ->
-                            mascotaViewModel.actualizarMonedasYExp(experiencia = 10, monedas = reward)
-                            Toast.makeText(
-                                this,
-                                "🎉 You earned $reward chigui-coins!",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    )
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    GoalsScreen { reward ->
+                        Toast.makeText(
+                            this,
+                            "¡Congratulations, you earned $reward chigui-coins!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             }
         }
@@ -72,12 +62,10 @@ class GoalsActivity : ComponentActivity() {
 
 @Composable
 fun GoalsScreen(
-    mascotaViewModel: MascotaViewModel,
-    onRewardEarned: (Int) -> Unit,
-    goalsViewModel: GoalsViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    viewModel: GoalsViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
+    onRewardEarned: (Int) -> Unit
 ) {
-    val goals = goalsViewModel.goals
-    val mascota by mascotaViewModel.mascota.collectAsState(initial = null)
+    val goals by remember { mutableStateOf(viewModel.goals) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.secondaryContainer
@@ -89,8 +77,7 @@ fun GoalsScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
-            // 🔹 Parte superior (imagen + burbuja)
+            // Parte superior
             Row(
                 verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.Center,
@@ -123,54 +110,36 @@ fun GoalsScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 🔹 Info de la mascota
-            mascota?.let {
-                Text(
-                    text = "Hi ${it.nombre}! You have ${it.monedas} 🪙 and ${it.experiencia} XP",
-                    fontSize = 18.sp,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             Text(
                 text = "Your goals",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(vertical = 8.dp),
                 color = MaterialTheme.colorScheme.onBackground
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // 🔹 Lista de retos
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                goals.forEach { goal ->
+                viewModel.goals.forEach { goal ->
                     GoalItem(
                         goal = goal,
-                        onClick = {
-                            goalsViewModel.completeGoal(goal, onRewardEarned)
-                        }
+                        onClick = { viewModel.completeGoal(goal, onRewardEarned) }
                     )
                 }
             }
         }
     }
 }
-
 @Composable
 fun GoalItem(goal: Goal, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = if (goal.completed)
-                    MaterialTheme.colorScheme.primaryContainer
-                else
-                    MaterialTheme.colorScheme.secondary,
+                color = if (goal.completed) MaterialTheme.colorScheme.primaryContainer
+                else MaterialTheme.colorScheme.secondary,
                 shape = RoundedCornerShape(12.dp)
             )
             .clickable { onClick() }
@@ -181,10 +150,8 @@ fun GoalItem(goal: Goal, onClick: () -> Unit) {
             text = goal.description,
             fontSize = 18.sp,
             modifier = Modifier.weight(1f),
-            color = if (goal.completed)
-                MaterialTheme.colorScheme.onPrimaryContainer
-            else
-                MaterialTheme.colorScheme.onSecondaryContainer
+            color = if (goal.completed) MaterialTheme.colorScheme.onPrimaryContainer
+            else MaterialTheme.colorScheme.secondaryContainer
         )
 
         if (!goal.completed) {
@@ -196,7 +163,7 @@ fun GoalItem(goal: Goal, onClick: () -> Unit) {
                     text = "${goal.reward}",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                    color = MaterialTheme.colorScheme.secondaryContainer
                 )
                 Image(
                     painter = painterResource(id = R.drawable.chiguicoin_png),
@@ -208,7 +175,7 @@ fun GoalItem(goal: Goal, onClick: () -> Unit) {
     }
 }
 
-// 🔹 Forma de la burbuja
+// Forma de la burbuja de diálogo
 fun speechBubbleShape(): GenericShape {
     return GenericShape { size, _ ->
         val cornerRadius = 40f
@@ -229,3 +196,11 @@ fun speechBubbleShape(): GenericShape {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun GoalsScreenPreview() {
+    Muskly_TrainWithMeTheme {
+        GoalsScreen(onRewardEarned = {})
+    }
+}

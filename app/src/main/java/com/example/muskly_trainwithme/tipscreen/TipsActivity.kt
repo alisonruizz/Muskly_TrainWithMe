@@ -94,14 +94,15 @@ fun TipsScreen(viewModel: TipsViewModel = viewModel()) {
                                     modifier = Modifier
                                         .size(32.dp)
                                         .background(
-                                            color = MaterialTheme.colorScheme.primary,
+                                            color = MaterialTheme.colorScheme.primaryContainer,
                                             shape = CircleShape
                                         )
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Add,
                                         contentDescription = "Expand",
-                                        tint = MaterialTheme.colorScheme.surfaceVariant
+                                        // Cambiado a azul oscuro del rectángulo
+                                        tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
                             }

@@ -25,7 +25,7 @@ class GoalsViewModel : ViewModel() {
     private val _goals = mutableStateListOf<Goal>().apply { addAll(initialGoals) }
     val goals: List<Goal> get() = _goals
 
-    // Estado de monedas ganadas (opcional, si quieres acumularlas aquí)
+    // Estado de monedas ganadas
     var coins = mutableStateOf(0)
         private set
 
@@ -53,7 +53,7 @@ class GoalsViewModel : ViewModel() {
         }
     }
 
-    // Permite reiniciar manualmente (útil para debug)
+    // Permite reiniciar manualmente
     fun resetAllGoals() {
         for (i in _goals.indices) {
             _goals[i] = _goals[i].copy(completed = false)
