@@ -6,6 +6,12 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,6 +23,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -24,8 +31,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModelProvider
 import com.example.muskly_trainwithme.R
+import com.example.muskly_trainwithme.data.MascotaDatabase
+import com.example.muskly_trainwithme.repository.MascotaRepository
 import com.example.muskly_trainwithme.ui.theme.Muskly_TrainWithMeTheme
+import com.example.muskly_trainwithme.viewmodel.MascotaViewModel
+import com.example.muskly_trainwithme.viewmodel.MascotaViewModelFactory
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
 
@@ -38,22 +52,29 @@ data class Goal(
 )
 
 class GoalsActivity : ComponentActivity() {
-    @RequiresApi(Build.VERSION_CODES.O)
+
+
+    private lateinit var mascotaViewModel: MascotaViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Configurar DB y ViewModel de Mascota
+        val database = MascotaDatabase.getDatabase(this)
+        val repository = MascotaRepository(database.mascotaDao())
+        val factory = MascotaViewModelFactory(repository)
+        mascotaViewModel = ViewModelProvider(this, factory)[MascotaViewModel::class.java]
         setContent {
             Muskly_TrainWithMeTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    GoalsScreen { reward ->
-                        Toast.makeText(
-                            this,
-                            "¡Congratulations, you earned $reward chigui-coins!",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
+                    GoalsScreen(
+                        mascotaViewModel = mascotaViewModel,
+                        onRewardEarned = { reward ->
+                            mascotaViewModel.actualizarMonedasYExp(experiencia = 10, monedas = reward)
+                        }
+                    )
                 }
             }
         }
@@ -62,76 +83,187 @@ class GoalsActivity : ComponentActivity() {
 
 @Composable
 fun GoalsScreen(
+    mascotaViewModel: MascotaViewModel,
     viewModel: GoalsViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
     onRewardEarned: (Int) -> Unit
 ) {
-    val goals by remember { mutableStateOf(viewModel.goals) }
+    var sortOption by rememberSaveable { mutableStateOf("All") }
+    val sortedGoals = remember(viewModel.goals, sortOption) {
+        when (sortOption) {
+            "Completed" -> viewModel.goals.filter { it.completed }
+            "Pending" -> viewModel.goals.filter { !it.completed }
+            else -> viewModel.goals
+        }
+    }
+
+    // Estado para animar la notificación
+    var rewardMessage by remember { mutableStateOf("") }
+    var showReward by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.secondaryContainer
     ) { padding ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Parte superior
-            Row(
-                verticalAlignment = Alignment.Top,
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth()
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.goals_png),
-                    contentDescription = "Mascota",
-                    modifier = Modifier.size(120.dp),
-                    contentScale = ContentScale.Fit
-                )
+                Row(
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.goals_png),
+                        contentDescription = "Mascota",
+                        modifier = Modifier.size(120.dp),
+                        contentScale = ContentScale.Fit
+                    )
 
-                Box(
-                    modifier = Modifier
-                        .padding(start = 8.dp, top = 8.dp)
-                        .background(
-                            MaterialTheme.colorScheme.surface,
-                            shape = speechBubbleShape()
+                    Box(
+                        modifier = Modifier
+                            .padding(start = 8.dp, top = 8.dp)
+                            .background(
+                                MaterialTheme.colorScheme.surface,
+                                shape = speechBubbleShape()
+                            )
+                            .padding(12.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.musk_message),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
-                        .padding(12.dp)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Título y dropdown Sort by
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = stringResource(R.string.musk_message),
-                        fontSize = 20.sp,
+                        text = "Your goals",
+                        fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onBackground
                     )
+
+                    var expanded by remember { mutableStateOf(false) }
+                    Box {
+                        TextButton(onClick = { expanded = true }) {
+                            Text("Sort by: $sortOption")
+                        }
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("All") },
+                                onClick = {
+                                    sortOption = "All"
+                                    expanded = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Completed") },
+                                onClick = {
+                                    sortOption = "Completed"
+                                    expanded = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Pending") },
+                                onClick = {
+                                    sortOption = "Pending"
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
                 }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Lista de retos
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    sortedGoals.forEach { goal ->
+                        GoalItem(
+                            goal = goal,
+                            onClick = {
+                                viewModel.completeGoal(goal) { reward ->
+                                    onRewardEarned(reward)
+                                    mascotaViewModel.actualizarMonedasYExp(experiencia = 10, monedas = reward)
+                                    rewardMessage = "🎉 Congratulations, you earned $reward chigui-coins!"
+                                    showReward = true
+                                    coroutineScope.launch {
+                                        delay(2000) // Mostrar 2 segundos
+                                        showReward = false
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = "Your goals",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(vertical = 8.dp),
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth()
+            // Notificación emergente deslizante desde abajo
+            AnimatedVisibility(
+                visible = showReward,
+                enter = slideInVertically(
+                    initialOffsetY = { fullHeight -> fullHeight },
+                    animationSpec = tween(durationMillis = 500)
+                ) + fadeIn(animationSpec = tween(500)),
+                exit = slideOutVertically(
+                    targetOffsetY = { fullHeight -> fullHeight },
+                    animationSpec = tween(durationMillis = 500)
+                ) + fadeOut(animationSpec = tween(500)),
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 16.dp)
             ) {
-                viewModel.goals.forEach { goal ->
-                    GoalItem(
-                        goal = goal,
-                        onClick = { viewModel.completeGoal(goal, onRewardEarned) }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .background(
+                            color = Color(0xAA808080), // Gris semi-transparente elegante
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                ) {
+                    Text(
+                        text = rewardMessage,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
                     )
                 }
             }
         }
     }
 }
+
+
+
+
+
+
 @Composable
 fun GoalItem(goal: Goal, onClick: () -> Unit) {
     Row(
@@ -196,11 +328,3 @@ fun speechBubbleShape(): GenericShape {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun GoalsScreenPreview() {
-    Muskly_TrainWithMeTheme {
-        GoalsScreen(onRewardEarned = {})
-    }
-}
